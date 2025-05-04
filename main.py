@@ -15,22 +15,30 @@ from PyQt5.QtWidgets import (  # type: ignore
     QHBoxLayout,
     QGridLayout,
     QGroupBox,
-    QFormLayout
+    QFormLayout,
+    QComboBox,
 )
 from PyQt5.QtGui import QIcon #type: ignore
 from PyQt5.QtCore import Qt #type: ignore
-# =============== GLOBALS ===============
+# =============== GLOBALS ====s===========
 
 # gets the location of the file so icon can be applied correctly
 icon_path = os.path.join(os.path.dirname(__file__), "icon/onlinz_logo")
 
+# =============== CONSTANTS ==============
+# will be used for island select.
+ISLANDS = ["North Island", "South Island", "Stewart Island"]
+
 # =============== MAIN WINDOW ===============
 class MainWindow(QMainWindow):
+    """Main window of app manages stacked pages | customer details, 
+    box dimensions and customer receipt."""
     def __init__(self):
+        """Initializes main window"""
         super().__init__()
         # sets basic window properties
         self.setWindowTitle("Onlinz Return Calculator")
-        self.setMinimumSize(600, 400)
+        self.setMinimumSize(450, 300)
         self.setWindowIcon(QIcon(icon_path))
         
         # for managing different pages
@@ -55,8 +63,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.Stack)
         
     def customer_details_ui(self):
+        """customer details page"""
         # sets up form layout on customer details page
-        layout = QFormLayout(self)
+        layout = QFormLayout()
         self.customer_details_stack.setLayout(layout)
         
         # groups input fields under customer details
@@ -66,15 +75,46 @@ class MainWindow(QMainWindow):
         form_layout = QFormLayout()
         customer_detailsbox.setLayout(form_layout)
         
+        #Initialize input variables
+        self.first_name_input = QLineEdit(customer_detailsbox)
+        self.last_name_input = QLineEdit(customer_detailsbox)
+        self.email_input = QLineEdit(customer_detailsbox)
+        self.telephone_input = QLineEdit(customer_detailsbox)
+        self.address_input = QLineEdit(customer_detailsbox)
+        self.island_select = QComboBox(customer_detailsbox)
+        
+        # add each island from the island list into the island select box
+        for island in ISLANDS:
+            self.island_select.addItem(island)
+        
+        # adds functionality to the next button to save the customer detials
+        self.next_button = QPushButton("Next", customer_detailsbox)
+        self.next_button.clicked.connect(self.save_customer_detail)
+        
         # Input fields for customer details - sets up two columns
-        form_layout.addRow("First Name:", QLineEdit(customer_detailsbox))
-        form_layout.addRow("Last Name:", QLineEdit(customer_detailsbox))
-        form_layout.addRow("Email:", QLineEdit(customer_detailsbox))
-        form_layout.addRow("Telephone Number:", QLineEdit(customer_detailsbox))
-        form_layout.addRow("Address:", QLineEdit(customer_detailsbox))
+        form_layout.addRow("First Name:", self.first_name_input)
+        form_layout.addRow("Last Name:", self.last_name_input)
+        form_layout.addRow("Email:", self.email_input)
+        form_layout.addRow("Telephone Number:", self.telephone_input)
+        form_layout.addRow("Address:", self.address_input)
+        form_layout.addRow("Island:", self.island_select)
+        form_layout.addRow(self.next_button)
         
         # adds customer_detailsbox to layout - this is needed to display UI
         layout.addWidget(customer_detailsbox)
+    
+    def save_customer_detail(self):
+        """customer inputted details are saved in this dictionary"""
+        customer_details = {
+            "first_name": self.first_name_input.text().capitalize(),
+            "last_name": self.last_name_input.text().capitalize(),
+            "email": self.email_input.text(),
+            "telephone": self.telephone_input.text(),
+            "address": self.address_input.text().title(),
+            "island": self.island_select.currentText()
+        }
+        
+        print("Customer Details:", customer_details)
   
     def box_dimensions_ui(self):
         pass
