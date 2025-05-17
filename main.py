@@ -49,10 +49,8 @@ class MainWindow(QMainWindow):
         self.box_dimensions_stack = QWidget()
         self.customer_receipt_stack = QWidget()
         
-        # initializing those pages
+        # initializing customer details page
         self.customer_details_ui()
-        self.box_dimensions_ui()
-        self.customer_receipt_ui()
         
         # adds pages to stacked widgets
         self.Stack.addWidget(self.customer_details_stack)
@@ -104,8 +102,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(customer_detailsbox)
     
     def save_customer_detail(self):
-        """customer inputted details are saved in this dictionary"""
-        customer_details = {
+        """customer inputted details are stored in this dictionary"""
+        self.customer_details = {
             "first_name": self.first_name_input.text().capitalize(),
             "last_name": self.last_name_input.text().capitalize(),
             "email": self.email_input.text(),
@@ -114,10 +112,59 @@ class MainWindow(QMainWindow):
             "island": self.island_select.currentText()
         }
         
-        print("Customer Details:", customer_details)
+        print("Customer Details:", self.customer_details)
+        # change window to customer details page
+        self.box_dimensions_ui()
+        self.Stack.setCurrentIndex(1)
+        
   
     def box_dimensions_ui(self):
-        pass
+        """box dimensions page"""
+        # sets up form layout on box dimensions page
+        layout = QFormLayout()
+        self.box_dimensions_stack.setLayout(layout)
+        
+        # makes the title of the group the user's firts name's box dimensions
+        first_name = self.customer_details.get("first_name")
+        box_dimensionsbox = QGroupBox(f"{first_name}'s Box Dimensions")
+        
+        # creates form layout for allowing simple addition of input fields
+        form_layout = QFormLayout()
+        box_dimensionsbox.setLayout(form_layout)
+        
+        # Initialize input variables
+        self.box_height_input = QLineEdit(box_dimensionsbox)
+        self.box_width_input = QLineEdit(box_dimensionsbox)
+        self.box_depth_input = QLineEdit(box_dimensionsbox)
+        
+        # the functionality for the back and next buttons
+        self.next_button = QPushButton("Next", box_dimensionsbox)
+        self.next_button.clicked.connect(self.save_box_dimension)
+        self.back_button = QPushButton("Back", box_dimensionsbox)
+        self.back_button.clicked.connect(lambda: self.Stack.setCurrentIndex(0))
+        
+        # adds input fields
+        form_layout.addRow("Box Height:", self.box_height_input)
+        form_layout.addRow("Box Width:", self.box_width_input)
+        form_layout.addRow("Box Depth:", self.box_depth_input)
+        form_layout.addRow(self.next_button)
+        form_layout.addRow(self.back_button)
+        
+        # adds box_dimensionsbox to layout - this is needed to display UI
+        layout.addWidget(box_dimensionsbox)
+    
+    def save_box_dimension(self):
+        """customer inputted details for box dimensions are stored in this dictionary"""
+        self.box_dimensions = {
+            "box_height": float(self.box_height_input.text()),
+            "box_width": float(self.box_width_input.text()),
+            "box_depth": float(self.box_depth_input.text()),
+        }
+        
+        print("Box Dimensions:", self.box_dimensions)
+        # change window to customer receipt page
+        self.Stack.setCurrentIndex(2)
+        self.customer_receipt_ui()
         
     def customer_receipt_ui(self):
         pass
