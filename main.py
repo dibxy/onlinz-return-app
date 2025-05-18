@@ -26,8 +26,10 @@ from PyQt5.QtCore import Qt #type: ignore
 icon_path = os.path.join(os.path.dirname(__file__), "icon/onlinz_logo")
 
 # =============== CONSTANTS ==============
-# will be used for island select.
-ISLANDS = ["North Island", "South Island", "Stewart Island"]
+# will be used for island select and base multipler.
+# changed to dictionary so I can have key value pair with the island and the base multiplier
+ISLANDS = {"North Island": 1, "South Island": 1.5, "Stewart Island": 2} 
+
 
 # =============== MAIN WINDOW ===============
 class MainWindow(QMainWindow):
@@ -59,7 +61,20 @@ class MainWindow(QMainWindow):
         
         # sets where the stack widget will be displayed
         self.setCentralWidget(self.Stack)
-        
+    
+    def calculate_base_rate(self, volume):
+        if volume <= 6000:
+            return 8
+        elif volume < 100000:
+            return 12
+        else:
+            return 15
+    
+    def calculate_return_cost(self, volume, island):
+        base_rate = self.calculate_base_rate(volume)
+        base_multiplier = ISLANDS[island]
+        return base_rate * base_multiplier
+    
     def customer_details_ui(self):
         """customer details page"""
         # sets up form layout on customer details page
@@ -82,7 +97,7 @@ class MainWindow(QMainWindow):
         self.island_select = QComboBox(customer_detailsbox)
         
         # add each island from the island list into the island select box
-        for island in ISLANDS:
+        for island in ISLANDS.keys():
             self.island_select.addItem(island)
         
         # adds functionality to the next button to save the customer detials
@@ -113,13 +128,17 @@ class MainWindow(QMainWindow):
         }
         
         print("Customer Details:", self.customer_details)
+    
         # change window to customer details page
         self.box_dimensions_ui()
         self.Stack.setCurrentIndex(1)
         
-  
     def box_dimensions_ui(self):
         """box dimensions page"""
+        # clear existing layout if existing
+        if self.box_dimensions_stack.layout() is not None:
+            QWidget().setLayout(self.box_dimensions_stack.layout())
+            
         # sets up form layout on box dimensions page
         layout = QFormLayout()
         self.box_dimensions_stack.setLayout(layout)
@@ -163,11 +182,74 @@ class MainWindow(QMainWindow):
         
         print("Box Dimensions:", self.box_dimensions)
         # change window to customer receipt page
-        self.Stack.setCurrentIndex(2)
         self.customer_receipt_ui()
+        self.Stack.setCurrentIndex(2)
         
     def customer_receipt_ui(self):
-        pass
+        """customer receipt page"""
+        # clear existing layout if existing
+        if self.customer_receipt_stack.layout() is not None:
+            QWidget().setLayout(self.customer_receipt_stack.layout())
+            
+        # sets up form layout on customer receipt page
+        layout = QFormLayout()
+        self.customer_receipt_stack.setLayout(layout)
+        
+        # get the data from the customer details list
+        first_name = self.customer_details.get("first_name")
+        last_name = self.customer_details.get("last_name")
+        email = self.customer_details.get("email")
+        telephone = self.customer_details.get("telephone")
+        address = self.customer_details.get("address")
+        island = self.customer_details.get("island")
+        
+        # get the data from box dimensions list
+        box_height = self.box_dimensions.get("box_height")
+        box_width = self.box_dimensions.get("box_width")
+        box_depth = self.box_dimensions.get("box_depth")
+        
+        # calculating box volume
+        box_volume = box_height * box_width * box_depth
+        
+        # calculating return cost
+        return_cost = self.calculate_return_cost(box_volume, island)
+        
+        # makes the title of the group the user's firts name's box dimensions
+        customer_reciept_box = QGroupBox(f"{first_name}'s Receipt")
+        
+        # creates form layout for allowing simple addition of input fields
+        form_layout = QFormLayout()
+        customer_reciept_box.setLayout(form_layout)
+        
+        # Initialize input variables
+        self.full_name_entry = QLabel(f"Name: {first_name} {last_name}")
+        self.email_entry = QLabel(f"Email: {email}")
+        self.telephone_entry = QLabel(f"Telephone: {telephone}")
+        self.address_entry = QLabel(f"Address: {address}")
+        self.island_entry = QLabel(f"Island Return: {island}")
+        self.box_dimensions_entry = QLabel(f"Box Volume: {box_height}cm × {box_width}cm × {box_depth}cm = {box_volume}cm³")
+        self.return_cost_total = QLabel(f"Cost of returning product: ${return_cost:.2f}")
+        
+        # adds functionality to the buttons
+        self.finish_button = QPushButton("Finish", customer_reciept_box)
+        self.finish_button.clicked.connect(lambda: sys.exit())
+        
+        self.back_button = QPushButton("Back", customer_reciept_box)
+        self.back_button.clicked.connect(lambda: self.Stack.setCurrentIndex(1))
+        
+        # Display fields detailing customer reciept
+        form_layout.addRow(self.full_name_entry)
+        form_layout.addRow(self.email_entry)
+        form_layout.addRow(self.telephone_entry)
+        form_layout.addRow(self.address_entry)
+        form_layout.addRow(self.island_entry)
+        form_layout.addRow(self.box_dimensions_entry)
+        form_layout.addRow(self.return_cost_total)
+        form_layout.addRow(self.finish_button)
+        form_layout.addRow(self.back_button)
+        
+        # adds box_dimensionsbox to layout - this is needed to display UI
+        layout.addWidget(customer_reciept_box)
 
 # =============== APP INITIALIZATION ===============
 if __name__ == '__main__':
