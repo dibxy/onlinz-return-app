@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.Stack)
     
     def calculate_base_rate(self, volume):
+        """the base rate is calcualted based on the box's volume""" 
         if volume <= 6000:
             return 8
         elif volume < 100000:
@@ -71,10 +72,31 @@ class MainWindow(QMainWindow):
             return 15
     
     def calculate_return_cost(self, volume, island):
+        """the return cost is calculated based on the base rate and which island the box will be returned to"""
         base_rate = self.calculate_base_rate(volume)
         base_multiplier = ISLANDS[island]
         return base_rate * base_multiplier
     
+    def toggle_customer_button(self):
+        """checks if all input fields have entries then if true enables next button"""
+        details = [
+            self.first_name_input.text().strip(),
+            self.last_name_input.text().strip(),
+            self.email_input.text().strip,
+            self.telephone_input.text().strip(),
+            self.address_input.text().strip()
+        ]
+        self.customer_next_button.setEnabled(all(details))
+        
+    def toggle_box_button(self):
+        """checks if all input fields have entries then if true enables next button"""
+        dimensions = [
+            self.box_height_input.text().strip(),
+            self.box_width_input.text().strip(),
+            self.box_depth_input.text().strip()
+        ]
+        self.box_next_button.setEnabled(all(dimensions))
+        
     def customer_details_ui(self):
         """customer details page"""
         # sets up form layout on customer details page
@@ -99,10 +121,17 @@ class MainWindow(QMainWindow):
         # add each island from the island list into the island select box
         for island in ISLANDS.keys():
             self.island_select.addItem(island)
+            
+        # checks if all input fields have an entry; when this is true the next button enabled
+        self.first_name_input.textChanged.connect(self.toggle_customer_button)
+        self.last_name_input.textChanged.connect(self.toggle_customer_button)
+        self.email_input.textChanged.connect(self.toggle_customer_button)
+        self.telephone_input.textChanged.connect(self.toggle_customer_button)
+        self.address_input.textChanged.connect(self.toggle_customer_button)
         
         # adds functionality to the next button to save the customer detials
-        self.next_button = QPushButton("Next", customer_detailsbox)
-        self.next_button.clicked.connect(self.save_customer_detail)
+        self.customer_next_button = QPushButton("Next", customer_detailsbox)
+        self.customer_next_button.clicked.connect(self.save_customer_detail)
         
         # Input fields for customer details - sets up two columns
         form_layout.addRow("First Name:", self.first_name_input)
@@ -111,7 +140,10 @@ class MainWindow(QMainWindow):
         form_layout.addRow("Telephone Number:", self.telephone_input)
         form_layout.addRow("Address:", self.address_input)
         form_layout.addRow("Island:", self.island_select)
-        form_layout.addRow(self.next_button)
+        form_layout.addRow(self.customer_next_button)
+        
+        # disables next button
+        self.customer_next_button.setEnabled(False)
         
         # adds customer_detailsbox to layout - this is needed to display UI
         layout.addWidget(customer_detailsbox)
@@ -156,18 +188,26 @@ class MainWindow(QMainWindow):
         self.box_width_input = QLineEdit(box_dimensionsbox)
         self.box_depth_input = QLineEdit(box_dimensionsbox)
         
+        # checks if all input fields have an entry; when this is true the next button enabled
+        self.box_height_input.textChanged.connect(self.toggle_box_button)
+        self.box_width_input.textChanged.connect(self.toggle_box_button)
+        self.box_depth_input.textChanged.connect(self.toggle_box_button)
+        
         # the functionality for the back and next buttons
-        self.next_button = QPushButton("Next", box_dimensionsbox)
-        self.next_button.clicked.connect(self.save_box_dimension)
-        self.back_button = QPushButton("Back", box_dimensionsbox)
-        self.back_button.clicked.connect(lambda: self.Stack.setCurrentIndex(0))
+        self.box_next_button = QPushButton("Next", box_dimensionsbox)
+        self.box_next_button.clicked.connect(self.save_box_dimension)
+        self.box_back_button = QPushButton("Back", box_dimensionsbox)
+        self.box_back_button.clicked.connect(lambda: self.Stack.setCurrentIndex(0))
         
         # adds input fields
         form_layout.addRow("Box Height:", self.box_height_input)
         form_layout.addRow("Box Width:", self.box_width_input)
         form_layout.addRow("Box Depth:", self.box_depth_input)
-        form_layout.addRow(self.next_button)
-        form_layout.addRow(self.back_button)
+        form_layout.addRow(self.box_next_button)
+        form_layout.addRow(self.box_back_button)
+        
+        # disables next button
+        self.box_next_button.setEnabled(False)
         
         # adds box_dimensionsbox to layout - this is needed to display UI
         layout.addWidget(box_dimensionsbox)
