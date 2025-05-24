@@ -11,14 +11,12 @@ from PyQt5.QtWidgets import (  # type: ignore
     QLabel,
     QLineEdit,
     QPushButton,
-    QVBoxLayout,
-    QHBoxLayout,
-    QGridLayout,
     QGroupBox,
     QFormLayout,
     QComboBox,
+    QDoubleSpinBox
 )
-from PyQt5.QtGui import QIcon #type: ignore
+from PyQt5.QtGui import QIcon, QIntValidator, QDoubleValidator #type: ignore
 from PyQt5.QtCore import Qt #type: ignore
 # =============== GLOBALS ====s===========
 
@@ -121,6 +119,10 @@ class MainWindow(QMainWindow):
         # add each island from the island list into the island select box
         for island in ISLANDS.keys():
             self.island_select.addItem(island)
+        
+        # restrict telephone input
+        telephone_validator = QIntValidator(customer_detailsbox)
+        self.telephone_input.setValidator(telephone_validator)
             
         # checks if all input fields have an entry; when this is true the next button enabled
         self.first_name_input.textChanged.connect(self.toggle_customer_button)
@@ -182,16 +184,28 @@ class MainWindow(QMainWindow):
         # creates form layout for allowing simple addition of input fields
         form_layout = QFormLayout()
         box_dimensionsbox.setLayout(form_layout)
-        
-        # Initialize input variables
-        self.box_height_input = QLineEdit(box_dimensionsbox)
-        self.box_width_input = QLineEdit(box_dimensionsbox)
-        self.box_depth_input = QLineEdit(box_dimensionsbox)
+
+        # restrict and validate box dimensions by creating a Spin box
+        # box height
+        self.box_height_input = QDoubleSpinBox(box_dimensionsbox)
+        self.box_height_input.setRange(5, 100)
+        self.box_height_input.setSuffix(" cm")
+        self.box_height_input.setDecimals(2)
+        # box width
+        self.box_width_input = QDoubleSpinBox(box_dimensionsbox)
+        self.box_width_input.setRange(5, 100)
+        self.box_width_input.setSuffix(" cm")
+        self.box_width_input.setDecimals(2)
+        #box depth
+        self.box_depth_input = QDoubleSpinBox(box_dimensionsbox)
+        self.box_depth_input.setRange(5, 100)
+        self.box_depth_input.setSuffix(" cm")
+        self.box_depth_input.setDecimals(2)
         
         # checks if all input fields have an entry; when this is true the next button enabled
-        self.box_height_input.textChanged.connect(self.toggle_box_button)
-        self.box_width_input.textChanged.connect(self.toggle_box_button)
-        self.box_depth_input.textChanged.connect(self.toggle_box_button)
+        self.box_height_input.valueChanged.connect(self.toggle_box_button)
+        self.box_width_input.valueChanged.connect(self.toggle_box_button)
+        self.box_depth_input.valueChanged.connect(self.toggle_box_button)
         
         # the functionality for the back and next buttons
         self.box_next_button = QPushButton("Next", box_dimensionsbox)
@@ -215,9 +229,9 @@ class MainWindow(QMainWindow):
     def save_box_dimension(self):
         """customer inputted details for box dimensions are stored in this dictionary"""
         self.box_dimensions = {
-            "box_height": float(self.box_height_input.text()),
-            "box_width": float(self.box_width_input.text()),
-            "box_depth": float(self.box_depth_input.text()),
+            "box_height": float(self.box_height_input.value()),
+            "box_width": float(self.box_width_input.value()),
+            "box_depth": float(self.box_depth_input.value()),
         }
         
         print("Box Dimensions:", self.box_dimensions)
@@ -267,7 +281,7 @@ class MainWindow(QMainWindow):
         self.telephone_entry = QLabel(f"Telephone: {telephone}")
         self.address_entry = QLabel(f"Address: {address}")
         self.island_entry = QLabel(f"Island Return: {island}")
-        self.box_dimensions_entry = QLabel(f"Box Volume: {box_height}cm × {box_width}cm × {box_depth}cm = {box_volume}cm³")
+        self.box_dimensions_entry = QLabel(f"Box Volume: {box_height}cm × {box_width}cm × {box_depth}cm = {box_volume:.2f}cm³")
         self.return_cost_total = QLabel(f"Cost of returning product: ${return_cost:.2f}")
         
         # adds functionality to the buttons
