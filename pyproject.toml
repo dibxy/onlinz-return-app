@@ -1,0 +1,20 @@
+[project]
+name = "onlinz-return-app"
+version = "0.1.0"
+description = "PyQt5 shipping return calculator for 12DGT AS91896 (School Python Project)"
+authors = [
+    {name = "dibxy"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "phonenumbers (>=9.0.6,<10.0.0)",
+    "email-validator (>=2.2.0,<3.0.0)",
+    "pyqt5 (>=5.15.11,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
