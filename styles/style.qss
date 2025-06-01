@@ -1,1 +1,116 @@
-/* QSS styling for app */
+/* Nord Theme QSS styling for Onlinz return app */
+
+* {
+    font-family: "Bahnschrift", Arial, sans-serif;
+    font-size: 16px;
+}
+
+QMainWindow, QWidget, QStackedWidget, QScrollArea {
+    background-color: #eceff4;
+    color: #2e3440;
+}
+
+/* GROUP BOXES */
+QGroupBox {
+    font-size: 18px;
+    font-weight: 600;
+    border: 2px solid #d8dee9;
+    border-radius: 12px;
+    margin-top: 12px;
+    padding-top: 20px;
+    background-color: #ffffff;
+}
+
+QGroupBox * {
+    background-color: #ffffff
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 8px 16px;
+    background-color: #eceff4;
+    border-radius: 8px;
+    left: 10px;
+}
+
+/* CUSTOMER DETAILS INPUT */
+QLineEdit, QDoubleSpinBox, QComboBox {
+    border: 2px solid #d8dee9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background-color: #ffffff;
+    color: #2e3440;
+    selection-background-color: #81a1c1;
+    selection-color: #ffffff;
+    min-height: 16px;
+}
+
+QLineEdit:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border-color: #5e81ac;
+}
+
+/* ISLAND SELECT */
+QComboBox QAbstractItemView {
+    border: 2px solid #d8dee9;
+    border-radius: 8px;
+    background-color: #ffffff;
+    selection-background-color: #81a1c1;
+    selection-color: #ffffff;
+}
+
+/* BACK AND NEXT BUTTONS */
+QPushButton {
+    background-color: #c9dcb1;
+    border: 2px solid #a3be8c;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    min-width: 80px;
+}
+
+QPushButton:hover {
+    background-color: #a3be8c;
+    border-color: #a3be8c;
+}
+
+QPushButton:disabled {
+    background-color: #f8f9fa;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+}
+
+QPushButton#finish_button {
+    background-color: #5e81ac;
+    color: #ffffff;
+    border-color: #5e81ac;
+    font-weight: 600;
+}
+
+QPushButton#finish_button:hover {
+    background-color: #4e719c;
+}
+
+QPushButton#back_button, QPushButton#box_back_button {
+    background-color: #d8dee9;
+    color: #2e3440;
+    border-color: #d8dee9;
+}
+
+QPushButton#back_button:hover, QPushButton#box_back_button:hover {
+    background-color: #c8d2d9;
+    border-color: #c8d2d9;
+}
+
+/* CUSTOMER RECEIPT STYLING */
+QWidget[class="CustomerReceiptPage"] QLabel {
+    font-size: 20px;
+    text-align: right;
+}
+
+QLabel#return_cost_price {
+    font-size: 45px;
+    text-align: right;
+    font-weight: bold;
+    color: #a3be8c;
+}
