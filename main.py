@@ -5,6 +5,24 @@ import sys
 import os
 import re
 import subprocess
+
+# =============== DEPENDENCY INSTALLER ===============
+def install_dependencies():
+    requirements_path = os.path.join(os.path.dirname(__file__), "requirements.txt")
+    
+    if not os.path.exists(requirements_path):
+        print("requirements.txt not found. Please install dependencies manually or use Onlinz.exe")
+        return
+    try:
+        print("Installing required dependencies...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", requirements_path])
+    except Exception:
+        print("failed to install dependencies—check if pip is installed or use Onlinz.exe instead")
+        sys.exit(1)
+
+install_dependencies()
+# ===================================================
+
 import phonenumbers
 from email_validator import validate_email
 from PyQt5.QtWidgets import (  # type: ignore
@@ -21,19 +39,6 @@ from PyQt5.QtWidgets import (  # type: ignore
     QDoubleSpinBox,
 )
 from PyQt5.QtGui import QIcon, QIntValidator #type: ignore
-
-def install_dependencies():
-    requirements_path = os.path.join(os.path.dirname(__file__), "requirements.txt")
-    
-    if not os.path.exists(requirements_path):
-        print("requirements.txt not found. Please install dependencies manually or use Onlinz.exe")
-        return
-    try:
-        print("Installing required dependencies...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", requirements_path])
-    except Exception:
-        print("failed to install dependencies—check if pip is installed or use Onlinz.exe instead")
-        sys.exit(1)
 
 # =============== GLOBALS ===============
 # gets the location of the file so icon can be applied correctly
@@ -430,7 +435,6 @@ class MainWindow(QMainWindow):
 
 # =============== APP INITIALIZATION ===============
 if __name__ == '__main__':
-    install_dependencies()
     app = QApplication(sys.argv)
    # Applies stylesheet
     try:
