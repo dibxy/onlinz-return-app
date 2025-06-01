@@ -21,11 +21,15 @@ def install_dependencies():
         sys.exit(1)
 
 install_dependencies()
+
 # ===================================================
 
 import phonenumbers
+from phonenumbers import AsYouTypeFormatter
 from email_validator import validate_email
-from PyQt5.QtWidgets import (  # type: ignore
+from PyQt5.QtGui import QIcon, QIntValidator 
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (  
     QApplication,
     QMainWindow,
     QWidget,
@@ -36,15 +40,12 @@ from PyQt5.QtWidgets import (  # type: ignore
     QGroupBox,
     QFormLayout,
     QComboBox,
-    QDoubleSpinBox,
-)
-from PyQt5.QtGui import QIcon, QIntValidator #type: ignore
-
-# =============== GLOBALS ===============
-# gets the location of the file so icon can be applied correctly
-icon_path = os.path.join(os.path.dirname(__file__), "icon/onlinz_logo")
+    QDoubleSpinBox)
 
 # =============== CONSTANTS ==============
+# gets the location of the file so icon can be applied correctly
+ICON_PATH = os.path.join(os.path.dirname(__file__), "icon/onlinz_logo")
+
 # will be used for island select and base multipler.
 ISLANDS = {"North Island": 1, "South Island": 1.5, "Stewart Island": 2} 
 
@@ -57,8 +58,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         # sets basic window properties
         self.setWindowTitle("Onlinz Return Calculator")
-        self.setMinimumSize(475, 300)
-        self.setWindowIcon(QIcon(icon_path))
+        self.setMinimumSize(645, 495)
+        self.setWindowIcon(QIcon(ICON_PATH))
         
         # for managing different pages
         self.Stack = QStackedWidget(self)
@@ -79,9 +80,9 @@ class MainWindow(QMainWindow):
         # sets where the stack widget will be displayed
         self.setCentralWidget(self.Stack)
         
-# =============== LOGIC ===============   
+# =============== CALCULATIONS ===============   
     def calculate_base_rate(self, volume):
-        """the base rate is calculted based on the box's volume""" 
+        """the base rate is calculated based on the box's volume""" 
         if volume <= 6000:
             return 8
         elif volume < 100000:
@@ -95,8 +96,9 @@ class MainWindow(QMainWindow):
         base_multiplier = ISLANDS[island]
         return base_rate * base_multiplier
     
+# =============== VALIDATORS =============== 
     def name_verify(self, first_name, last_name):
-        """verify's the first and last name using regex"""
+        """verifies the first and last name using regex"""
         name_regex = re.compile(
                 r"""^
                 [A-Za-zÀ-ÿ]                             # must start with a letter
@@ -109,7 +111,7 @@ class MainWindow(QMainWindow):
         return first_valid, last_valid
     
     def email_verify(self, email):
-        """verify's the email address using email_validator"""
+        """verifies the email address using email_validator"""
         allowed_domains = ["example.com", "example.org", "example.net"]
         try:
             validate_email(email)
@@ -129,8 +131,18 @@ class MainWindow(QMainWindow):
         except Exception:
             return False
     
+    def format_telephone_input(self, telephone_input):
+        try:
+            parsed = phonenumbers.parse(telephone_input.text(), 'NZ')
+            if phonenumbers.is_valid_number(parsed):
+                formatted = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
+                if telephone_input.text() != formatted:
+                    telephone_input.setText(formatted)
+        except phonenumbers.NumberParseException:
+            pass
+    
     def address_verify(self, address):
-        """veryify's how valid the address is using regex"""
+        """verifies how valid the address is using regex"""
         nz_address_regex = re.compile(
             r"""^
             (?P<number>\d{1,5}[A-Z]?(/\d{1,4})?)              # street number or unit
@@ -151,7 +163,7 @@ class MainWindow(QMainWindow):
             return True
         else:
             return False
-    
+# =============== BUTTON TOGGLE VALIDATORS ===============
     def toggle_customer_button(self):
             """confirms if there is valid input in all customer details before permitting next"""
             # customer detail input
@@ -224,27 +236,27 @@ class MainWindow(QMainWindow):
         self.telephone_input.setValidator(telephone_validator)
         
         # name warning message
-        self.first_name_warning_message = QLabel("Name must only contain letters, spaces, hyphens, or apostrophes", customer_detailsbox)
-        self.first_name_warning_message.setStyleSheet("color: red")
+        self.first_name_warning_message = QLabel("letters, spaces, hyphens, or apostrophes only", customer_detailsbox)
+        self.first_name_warning_message.setStyleSheet("color: #bf616a")
         self.first_name_warning_message.setVisible(False)
         
-        self.last_name_warning_message = QLabel("Name must only contain letters, spaces, hyphens, or apostrophes", customer_detailsbox)
-        self.last_name_warning_message.setStyleSheet("color: red")
+        self.last_name_warning_message = QLabel("letters, spaces, hyphens, or apostrophes only", customer_detailsbox)
+        self.last_name_warning_message.setStyleSheet("color: #bf616a")
         self.last_name_warning_message.setVisible(False)
         
         # email warning message
         self.email_warning_message = QLabel("Please enter a valid email address", customer_detailsbox)
-        self.email_warning_message.setStyleSheet("color: red")
+        self.email_warning_message.setStyleSheet("color: #bf616a")
         self.email_warning_message.setVisible(False)
         
         # telephone warning message
         self.telephone_warning_message = QLabel("Please enter a valid NZ telephone number", customer_detailsbox)
-        self.telephone_warning_message.setStyleSheet("color: red")
+        self.telephone_warning_message.setStyleSheet("color: #bf616a")
         self.telephone_warning_message.setVisible(False)
         
         # address warning message
         self.address_warning_message = QLabel("Please enter a valid address", customer_detailsbox)
-        self.address_warning_message.setStyleSheet("color: red")
+        self.address_warning_message.setStyleSheet("color: #bf616a")
         self.address_warning_message.setVisible(False)
         
         # checks if all input fields have an entry; when this is true the next button enabled
@@ -257,6 +269,13 @@ class MainWindow(QMainWindow):
         # adds functionality to the next button to save the customer detials
         self.customer_next_button = QPushButton("Next", customer_detailsbox)
         self.customer_next_button.clicked.connect(self.save_customer_detail)
+        
+        # Formats user input
+        self.first_name_input.editingFinished.connect(lambda: self.first_name_input.setText(self.first_name_input.text().capitalize()))
+        self.last_name_input.editingFinished.connect(lambda: self.last_name_input.setText(self.last_name_input.text().capitalize()))
+        self.email_input.editingFinished.connect(lambda: self.email_input.setText(self.email_input.text().lower()))
+        self.telephone_input.editingFinished.connect(lambda: self.format_telephone_input(self.telephone_input))
+        self.address_input.editingFinished.connect(lambda: self.address_input.setText(self.address_input.text().title()))
         
         # Input fields and errors for customer details - sets up two columns
         form_layout.addRow("First Name:", self.first_name_input)
@@ -284,7 +303,7 @@ class MainWindow(QMainWindow):
         self.customer_details = {
             "first_name": self.first_name_input.text().capitalize(),
             "last_name": self.last_name_input.text().capitalize(),
-            "email": self.email_input.text().strip(),
+            "email": self.email_input.text().lower().strip(),
             "telephone": self.telephone_input.text(),
             "address": self.address_input.text().title(),
             "island": self.island_select.currentText()
@@ -339,6 +358,7 @@ class MainWindow(QMainWindow):
         self.box_next_button = QPushButton("Next", box_dimensionsbox)
         self.box_next_button.clicked.connect(self.save_box_dimension)
         self.box_back_button = QPushButton("Back", box_dimensionsbox)
+        self.box_back_button.setObjectName("back_button")
         self.box_back_button.clicked.connect(lambda: self.Stack.setCurrentIndex(0))
         
         # adds input fields
@@ -403,30 +423,60 @@ class MainWindow(QMainWindow):
         form_layout = QFormLayout()
         customer_receipt_box.setLayout(form_layout)
         
-        # Initialize input variables
-        self.full_name_entry = QLabel(f"Name: {first_name} {last_name}")
-        self.email_entry = QLabel(f"Email: {email}")
-        self.telephone_entry = QLabel(f"Telephone: {telephone}")
-        self.address_entry = QLabel(f"Address: {address}")
-        self.island_entry = QLabel(f"Island Return: {island}")
-        self.box_dimensions_entry = QLabel(f"Box Volume: {box_height}cm × {box_width}cm × {box_depth}cm = {box_volume:.2f}cm³")
-        self.return_cost_total = QLabel(f"Cost of returning product: ${return_cost:.2f}")
+        # Set entries and outputs | align outputs to the right
+        self.full_name_entry = QLabel("<b>Name:</b>")
+        self.full_name_output = QLabel(f"{first_name} {last_name}")
         
+        self.email_entry = QLabel("<b>Email:</b>")
+        self.email_output = QLabel(f"{email}")
+        
+        self.telephone_entry = QLabel("<b>Telephone:</b>")
+        self.telephone_output = QLabel(f"{telephone}")
+        
+        self.address_entry = QLabel("<b>Address:</b>")
+        self.address_output = QLabel(f"{address}")
+        
+        self.island_entry = QLabel("<b>Island Return:</b>")
+        self.island_output = QLabel(f"{island}")
+        
+        self.box_dimensions_entry = QLabel("<b>Box Volume:</b>")
+        self.box_dimensions_output = QLabel(f"{box_height}cm × {box_width}cm × {box_depth}cm = {box_volume:.2f}cm³")
+        
+        self.return_cost_total = QLabel("<b><i>Cost of returning product:</i></b>")
+        self.return_cost_price = QLabel(f"${return_cost:.2f}")
+        
+        outputs = (self.full_name_output, 
+                 self.email_output, 
+                 self.telephone_output, 
+                 self.address_output, 
+                 self.island_output,
+                 self.box_dimensions_output,
+                 self.return_cost_price)
+        
+        for output in outputs:
+            output.setAlignment(Qt.AlignRight)
+            
         # adds functionality to the buttons
         self.finish_button = QPushButton("Finish", customer_receipt_box)
+        self.finish_button.setObjectName("finish_button")
         self.finish_button.clicked.connect(lambda: sys.exit())
-        
+                
         self.back_button = QPushButton("Back", customer_receipt_box)
+        self.back_button.setObjectName("back_button")
         self.back_button.clicked.connect(lambda: self.Stack.setCurrentIndex(1))
         
+        # For styling purposes
+        self.customer_receipt_stack.setProperty("class", "CustomerReceiptPage")
+        self.return_cost_price.setObjectName("return_cost_price")
+        
         # Display fields detailing customer reciept
-        form_layout.addRow(self.full_name_entry)
-        form_layout.addRow(self.email_entry)
-        form_layout.addRow(self.telephone_entry)
-        form_layout.addRow(self.address_entry)
-        form_layout.addRow(self.island_entry)
-        form_layout.addRow(self.box_dimensions_entry)
-        form_layout.addRow(self.return_cost_total)
+        form_layout.addRow(self.full_name_entry, self.full_name_output)
+        form_layout.addRow(self.email_entry, self.email_output)
+        form_layout.addRow(self.telephone_entry, self.telephone_output)
+        form_layout.addRow(self.address_entry, self.address_output)
+        form_layout.addRow(self.island_entry, self.island_output)
+        form_layout.addRow(self.box_dimensions_entry, self.box_dimensions_output)
+        form_layout.addRow(self.return_cost_total, self.return_cost_price)
         form_layout.addRow(self.finish_button)
         form_layout.addRow(self.back_button)
         
