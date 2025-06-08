@@ -5,7 +5,6 @@ import sys
 import os
 import re
 import subprocess
-
 # =============== DEPENDENCY INSTALLER ===============
 def install_dependencies():
     requirements_path = os.path.join(os.path.dirname(__file__), "requirements.txt")
@@ -21,11 +20,9 @@ def install_dependencies():
         sys.exit(1)
 
 install_dependencies()
-
 # ===================================================
-
+import json
 import phonenumbers
-from phonenumbers import AsYouTypeFormatter
 from email_validator import validate_email
 from PyQt5.QtGui import QIcon, QIntValidator 
 from PyQt5.QtCore import Qt
@@ -102,7 +99,7 @@ class MainWindow(QMainWindow):
         name_regex = re.compile(
                 r"""^
                 [A-Za-zÀ-ÿ]                             # must start with a letter
-                [A-Za-zÀ-ÿ\s'’-]{0,80}                  # allow up to 80 characters
+                [A-Za-zÀ-ÿ\s'’-]{0,79}                  # allow up to 80 characters
                 $""",
                 re.UNICODE | re.VERBOSE
             )
@@ -131,16 +128,6 @@ class MainWindow(QMainWindow):
         except Exception:
             return False
     
-    def format_telephone_input(self, telephone_input):
-        try:
-            parsed = phonenumbers.parse(telephone_input.text(), 'NZ')
-            if phonenumbers.is_valid_number(parsed):
-                formatted = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
-                if telephone_input.text() != formatted:
-                    telephone_input.setText(formatted)
-        except phonenumbers.NumberParseException:
-            pass
-    
     def address_verify(self, address):
         """verifies how valid the address is using regex"""
         nz_address_regex = re.compile(
@@ -163,6 +150,19 @@ class MainWindow(QMainWindow):
             return True
         else:
             return False
+        
+# =============== FORMATTER =============== 
+    def format_telephone_input(self, telephone_input):
+            """Formats telephone input into National NZ format"""
+            try:
+                parsed = phonenumbers.parse(telephone_input.text(), 'NZ')
+                if phonenumbers.is_valid_number(parsed):
+                    formatted = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
+                    if telephone_input.text() != formatted:
+                        telephone_input.setText(formatted)
+            except phonenumbers.NumberParseException:
+                pass
+
 # =============== BUTTON TOGGLE VALIDATORS ===============
     def toggle_customer_button(self):
             """confirms if there is valid input in all customer details before permitting next"""
@@ -236,11 +236,11 @@ class MainWindow(QMainWindow):
         self.telephone_input.setValidator(telephone_validator)
         
         # name warning message
-        self.first_name_warning_message = QLabel("letters, spaces, hyphens, or apostrophes only", customer_detailsbox)
+        self.first_name_warning_message = QLabel("letters, spaces, hyphens, or apostrophes only | Maximum 80 characters", customer_detailsbox)
         self.first_name_warning_message.setStyleSheet("color: #bf616a")
         self.first_name_warning_message.setVisible(False)
         
-        self.last_name_warning_message = QLabel("letters, spaces, hyphens, or apostrophes only", customer_detailsbox)
+        self.last_name_warning_message = QLabel("letters, spaces, hyphens, or apostrophes only | Maximum 80 characters", customer_detailsbox)
         self.last_name_warning_message.setStyleSheet("color: #bf616a")
         self.last_name_warning_message.setVisible(False)
         
@@ -455,10 +455,37 @@ class MainWindow(QMainWindow):
         
         for output in outputs:
             output.setAlignment(Qt.AlignRight)
+        
+        # dictionary of customer receipt which will be saved into json file
+        data = {
+            "Name": self.full_name_output.text(),
+            "Email": self.email_output.text(),
+            "Telephone": self.telephone_output.text(),
+            "Address": self.address_output.text(),
+            "Island Return": self.island_output.text(),
+            "Box Height": box_height,
+            "Box Width": box_width,
+            "Box Depth": box_depth,
+            "Box Volume": box_volume,
+            "Cost of returning product": float(f"{return_cost:.2f}"),
+            }
+        
+        def save_data_json(new_entry, filename="data/customer_data.json"):
+            """For saving customer receipt information in customer_data.json file.
+                It opens customer_data.json then appends data dictionary"""
+            try:
+                with open(filename, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                data = []
+            data.append(new_entry)
+            with open(filename, "w") as f:
+                json.dump(data, f, indent=4)
             
         # adds functionality to the buttons
         self.finish_button = QPushButton("Finish", customer_receipt_box)
         self.finish_button.setObjectName("finish_button")
+        self.finish_button.clicked.connect(lambda: save_data_json(data))
         self.finish_button.clicked.connect(lambda: sys.exit())
                 
         self.back_button = QPushButton("Back", customer_receipt_box)
@@ -479,7 +506,7 @@ class MainWindow(QMainWindow):
         form_layout.addRow(self.return_cost_total, self.return_cost_price)
         form_layout.addRow(self.finish_button)
         form_layout.addRow(self.back_button)
-        
+            
         # adds box_dimensionsbox to layout - this is needed to display UI
         layout.addWidget(customer_receipt_box)
 
