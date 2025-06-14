@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
         """verifies how valid the address is using regex"""
         nz_address_regex = re.compile(
             r"""^
-            (?P<number>\d{1,5}[A-Z]?(/\d{1,4})?)              # street number or unit
+            (?P<number>[1-9]\d{0,3}[A-Z]?(/\d{1,4})?)              # street number or unit
             \s+
             (?P<street>[A-Za-zÀ-ÿ\s'\-]+)                     # street name
             \s+
@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
         self.customer_next_button.clicked.connect(self.save_customer_detail)
         
         # Formats user input
-        self.first_name_input.editingFinished.connect(lambda: self.first_name_input.setText(self.first_name_input.text().capitalize()))
+        self.first_name_input.editingFinished.connect(lambda: self.first_name_input.setText(self.first_name_input.text().title()))
         self.last_name_input.editingFinished.connect(lambda: self.last_name_input.setText(self.last_name_input.text().capitalize()))
         self.email_input.editingFinished.connect(lambda: self.email_input.setText(self.email_input.text().lower()))
         self.telephone_input.editingFinished.connect(lambda: self.format_telephone_input(self.telephone_input))
