@@ -514,8 +514,9 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
    # Applies stylesheet
+    STYLE_PATH = os.path.join(os.path.dirname(__file__), "styles/style.qss")
     try:
-        with open('styles/style.qss', 'r') as f:
+        with open(STYLE_PATH, 'r') as f:
             style = f.read()
         app.setStyleSheet(style)
     except Exception:
