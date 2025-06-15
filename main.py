@@ -272,7 +272,7 @@ class MainWindow(QMainWindow):
         
         # Formats user input
         self.first_name_input.editingFinished.connect(lambda: self.first_name_input.setText(self.first_name_input.text().title()))
-        self.last_name_input.editingFinished.connect(lambda: self.last_name_input.setText(self.last_name_input.text().capitalize()))
+        self.last_name_input.editingFinished.connect(lambda: self.last_name_input.setText(self.last_name_input.text().title()))
         self.email_input.editingFinished.connect(lambda: self.email_input.setText(self.email_input.text().lower()))
         self.telephone_input.editingFinished.connect(lambda: self.format_telephone_input(self.telephone_input))
         self.address_input.editingFinished.connect(lambda: self.address_input.setText(self.address_input.text().title()))
@@ -301,8 +301,8 @@ class MainWindow(QMainWindow):
         """customer inputted details are stored in this dictionary"""
         
         self.customer_details = {
-            "first_name": self.first_name_input.text().capitalize(),
-            "last_name": self.last_name_input.text().capitalize(),
+            "first_name": self.first_name_input.text().title(),
+            "last_name": self.last_name_input.text().title(),
             "email": self.email_input.text().lower().strip(),
             "telephone": self.telephone_input.text(),
             "address": self.address_input.text().title(),
