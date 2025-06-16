@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
         base_rate = self.calculate_base_rate(volume)
         base_multiplier = ISLANDS[island]
         return base_rate * base_multiplier
-    
+
 # =============== VALIDATORS =============== 
     def name_verify(self, first_name, last_name):
         """verifies the first and last name using regex"""
@@ -333,21 +333,16 @@ class MainWindow(QMainWindow):
         box_dimensionsbox.setLayout(form_layout)
 
         # restrict and validate box dimensions by creating a Spin box
-        # box height
-        self.box_height_input = QDoubleSpinBox(box_dimensionsbox)
-        self.box_height_input.setRange(5, 100)
-        self.box_height_input.setSuffix(" cm")
-        self.box_height_input.setDecimals(2)
-        # box width
-        self.box_width_input = QDoubleSpinBox(box_dimensionsbox)
-        self.box_width_input.setRange(5, 100)
-        self.box_width_input.setSuffix(" cm")
-        self.box_width_input.setDecimals(2)
-        #box depth
-        self.box_depth_input = QDoubleSpinBox(box_dimensionsbox)
-        self.box_depth_input.setRange(5, 100)
-        self.box_depth_input.setSuffix(" cm")
-        self.box_depth_input.setDecimals(2)
+        def box_dimensions_spinbox(parent):
+            spinbox = QDoubleSpinBox(parent)
+            spinbox.setRange(5, 100)
+            spinbox.setSuffix(" cm")
+            spinbox.setDecimals(2)
+            return spinbox
+        
+        self.box_height_input = box_dimensions_spinbox(box_dimensionsbox)
+        self.box_width_input = box_dimensions_spinbox(box_dimensionsbox)
+        self.box_depth_input = box_dimensions_spinbox(box_dimensionsbox)
         
         # checks if all input fields have an entry; when this is true the next button enabled
         self.box_height_input.valueChanged.connect(self.toggle_box_button)
@@ -411,7 +406,8 @@ class MainWindow(QMainWindow):
         box_depth = self.box_dimensions.get("box_depth")
         
         # calculating box volume
-        box_volume = box_height * box_width * box_depth
+        box_volume_general = lambda height, width, depth: height * width * depth
+        box_volume = box_volume_general(box_height, box_width, box_depth)
         
         # calculating return cost
         return_cost = self.calculate_return_cost(box_volume, island)
